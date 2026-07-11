@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGM | Purple Clicker Ultimate v2</title>
-    <!-- Tailwind CSS (CDN) -->
+    <title>SGM | Purple Clicker Ultimate v3</title>
+    <!-- Manifest ve PWA Meta Etiketleri -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9333ea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- ==========================================
-         SGM CSS MOTORU (Genişletilmiş Animasyonlar)
-         ========================================== -->
     <style>
         :root {
             --purple-main: #9333ea;
@@ -18,336 +18,163 @@
             --bg-color: #050510;
             --panel-bg: rgba(20, 15, 45, 0.85);
             --neon-pink: #f472b6;
+            --light-intensity: 0px; /* OmniLight için dinamik */
         }
 
-        * {
-            box-sizing: border-box;
+        /* OmniLight Işık Modu Etkisi */
+        .omnilight-active {
+            --bg-color: #0c0822;
+            --panel-bg: rgba(30, 20, 60, 0.9);
+            box-shadow: inset 0 0 var(--light-intensity) rgba(168, 85, 247, 0.4);
         }
 
         body {
             background-color: var(--bg-color);
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(76, 29, 149, 0.15), transparent 30%),
-                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.15), transparent 30%),
-                linear-gradient(to bottom, #050510, #10051f);
+                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.15), transparent 30%);
             color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
             user-select: none;
         }
 
-        /* Özel Kaydırma Çubuğu */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-        ::-webkit-scrollbar-thumb { background: var(--purple-main); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-pink); }
-
-        /* Cam Efektli Paneller */
         .glass-panel {
             background: var(--panel-bg);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(147, 51, 234, 0.3);
             border-radius: 1.2rem;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
         }
 
-        .glass-panel:hover {
-            border-color: rgba(168, 85, 247, 0.7);
-            box-shadow: 0 10px 50px var(--purple-glow);
-        }
-
-        /* Ana Tıklama Butonu */
+        /* Ana Tıklama Butonu & Parla Efekti */
         .clicker-btn {
             background: radial-gradient(circle at 30% 30%, #a855f7, #6b21a8);
             border: 4px solid #e9d5ff;
             border-radius: 50%;
-            width: 280px;
-            height: 280px;
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: white;
-            cursor: pointer;
-            box-shadow: 
-                0 0 50px var(--purple-glow), 
-                inset 0 0 30px rgba(255,255,255,0.4),
-                0 20px 40px rgba(0,0,0,0.6);
-            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.7);
-            position: relative;
-            z-index: 10;
+            width: 250px;
+            height: 250px;
+            box-shadow: 0 0 calc(30px + var(--light-intensity)) var(--purple-glow);
+            transition: transform 0.1s, box-shadow 0.2s;
         }
 
-        .clicker-btn:hover {
-            box-shadow: 
-                0 0 80px rgba(168, 85, 247, 0.9), 
-                inset 0 0 40px rgba(255,255,255,0.6),
-                0 30px 50px rgba(0,0,0,0.8);
-            transform: scale(1.03);
-        }
+        .clicker-btn:active { transform: scale(0.95); }
 
-        .clicker-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 20px var(--purple-glow);
-        }
-
-        /* Mağaza Butonları */
-        .upgrade-btn {
-            background: linear-gradient(90deg, rgba(88, 28, 135, 0.3) 0%, rgba(30, 27, 75, 0.5) 100%);
-            border: 1px solid rgba(147, 51, 234, 0.4);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            text-align: left;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .upgrade-btn:hover:not(:disabled) {
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.5) 0%, rgba(76, 29, 149, 0.6) 100%);
-            border-color: #c084fc;
-            transform: translateX(5px);
-        }
-
-        .upgrade-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            filter: grayscale(80%);
-        }
-
-        /* Animasyonlar */
+        /* Uçan Parçacık Animasyonu */
         @keyframes float-up {
-            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-120px) scale(1.8) rotate(10deg); opacity: 0; }
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
         }
 
         .floating-text {
             position: absolute;
-            color: #e9d5ff;
-            font-weight: 900;
-            font-size: 2.5rem;
             pointer-events: none;
-            animation: float-up 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            text-shadow: 0 0 15px #a855f7, 0 0 5px white;
+            animation: float-up 1s ease-out forwards;
+            text-shadow: 0 0 10px #a855f7;
             z-index: 50;
         }
 
-        @keyframes pulse-glow {
-            0% { text-shadow: 0 0 10px #7c3aed; }
-            50% { text-shadow: 0 0 40px #c084fc, 0 0 20px white; }
-            100% { text-shadow: 0 0 10px #7c3aed; }
+        /* Mor Kalp Barı */
+        .heart-bar-fill {
+            transition: width 0.2s ease, background-color 0.3s;
         }
 
-        .score-text {
-            font-family: 'Consolas', 'Courier New', monospace;
-            animation: pulse-glow 3s infinite;
-        }
-
-        @keyframes slide-in-toast {
-            0% { transform: translateX(120%) scale(0.9); opacity: 0; }
-            100% { transform: translateX(0) scale(1); opacity: 1; }
-        }
-
-        .toast-enter { 
-            animation: slide-in-toast 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+        .banned-btn {
+            background: #111 !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+            cursor: not-allowed !important;
         }
 
         .hidden-el { display: none !important; }
-        
-        .neon-text {
-            color: transparent;
-            background-clip: text;
-            -webkit-background-clip: text;
-            background-image: linear-gradient(to right, #e9d5ff, #c084fc, #9333ea);
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            border-left-color: #c084fc;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Ban Ekranı Efekti */
-        .banned-btn {
-            background: #1a1a1a !important;
-            border-color: #ff0000 !important;
-            color: #ff0000 !important;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5) !important;
-            cursor: not-allowed !important;
-            transform: scale(0.95) !important;
-        }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col p-4 gap-4" id="main-body">
 
-    <!-- BİLDİRİM MERKEZİ -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
-    <!-- ==========================================
-         GİRİŞ EKRANI (AUTH)
-         ========================================== -->
+    <!-- AUTH SCREEN -->
     <div id="auth-screen" class="fixed inset-0 flex items-center justify-center z-40 bg-black/90 backdrop-blur-md">
-        <div class="glass-panel p-10 w-full max-w-md relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-700 via-pink-500 to-purple-700 animate-pulse"></div>
-            
-            <div class="text-center mb-10">
-                <h1 class="text-5xl font-black neon-text mb-2 tracking-widest">SGM OS</h1>
-                <p class="text-purple-400 text-sm font-mono tracking-wider">v2.0 Ultimate Edition</p>
+        <div class="glass-panel p-8 w-full max-w-md">
+            <h1 class="text-4xl font-black text-center mb-6 text-purple-400 tracking-wider">SGM OS v3</h1>
+            <div class="space-y-4">
+                <input type="email" id="email" class="w-full bg-slate-900 border border-purple-800 rounded p-3 text-white" placeholder="E-Posta">
+                <input type="password" id="password" class="w-full bg-slate-900 border border-purple-800 rounded p-3 text-white" placeholder="Şifre">
+                <div class="flex gap-2">
+                    <button id="login-btn" class="flex-1 bg-purple-600 font-bold py-3 rounded">GİRİŞ</button>
+                    <button id="signup-btn" class="flex-1 border border-purple-600 rounded">KAYIT</button>
+                </div>
+                <button id="offline-btn" class="w-full bg-gray-800 text-gray-300 font-bold py-2 rounded mt-2 text-sm border border-gray-700">İnternetsiz Devam Et (Yerel Kayıt)</button>
             </div>
-
-            <div class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-purple-500 uppercase tracking-widest mb-2">E-Posta Adresi</label>
-                    <input type="email" id="email" class="w-full bg-slate-900/80 border border-purple-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 transition font-mono" placeholder="oyuncu@sgm.com">
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-bold text-purple-500 uppercase tracking-widest mb-2">Şifre Protokolü</label>
-                    <input type="password" id="password" class="w-full bg-slate-900/80 border border-purple-800 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 transition font-mono" placeholder="••••••••">
-                </div>
-
-                <div class="flex gap-4 pt-2">
-                    <button id="login-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]">GİRİŞ YAP</button>
-                    <button id="signup-btn" class="flex-1 bg-transparent border-2 border-purple-600 hover:bg-purple-900/50 text-purple-300 font-bold py-3 rounded-lg transition">KAYIT OL</button>
-                </div>
-
-                <div class="relative flex py-5 items-center">
-                    <div class="flex-grow border-t border-purple-900"></div>
-                    <span class="flex-shrink-0 mx-4 text-purple-600 text-xs font-bold tracking-widest">VEYA</span>
-                    <div class="flex-grow border-t border-purple-900"></div>
-                </div>
-
-                <button id="google-login-btn" class="w-full bg-white hover:bg-gray-200 text-slate-900 font-bold py-3 rounded-lg transition flex items-center justify-center gap-3 shadow-lg">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                    Google ile Hızlı Giriş
-                </button>
-            </div>
-            
-            <div id="auth-error" class="text-red-400 text-sm text-center mt-6 hidden-el font-bold bg-red-900/40 p-3 rounded-lg border border-red-500/50"></div>
+            <div id="auth-error" class="text-red-400 text-sm text-center mt-4 hidden-el bg-red-950/50 p-2 rounded"></div>
         </div>
     </div>
 
-    <!-- ==========================================
-         ANA OYUN EKRANI
-         ========================================== -->
-    <div id="game-app" class="hidden-el w-full h-full flex flex-col md:flex-row p-4 gap-4">
+    <!-- GAME APP -->
+    <div id="game-app" class="hidden-el w-full h-full flex flex-col md:flex-row gap-4">
         
-        <!-- SOL PANEL: İstatistikler & Liderlik -->
-        <div class="glass-panel w-full md:w-3/12 p-6 flex flex-col h-full">
-            <!-- Profil -->
-            <div class="flex items-center justify-between mb-8 border-b border-purple-800/50 pb-6">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center font-black text-2xl border border-purple-300 shadow-lg">
-                        <span id="player-initial">S</span>
-                    </div>
-                    <div class="overflow-hidden">
-                        <div id="player-email" class="font-bold text-sm text-gray-100 truncate">oyuncu@sgm.com</div>
-                        <div class="text-purple-400 text-xs font-mono mt-1">Purpleguy Creator</div>
-                    </div>
-                </div>
-                <button id="logout-btn" class="text-xs font-bold bg-red-900/40 border border-red-500/50 hover:bg-red-600 px-4 py-2 rounded-lg text-white transition">ÇIKIŞ</button>
+        <!-- SOL PANEL -->
+        <div class="glass-panel w-full md:w-3/12 p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center bg-black/30 p-3 rounded-lg">
+                <div class="truncate font-bold text-sm" id="player-email">Yerel Oyuncu</div>
+                <button id="logout-btn" class="text-xs bg-red-900/50 px-2 py-1 rounded text-red-300">ÇIKIŞ</button>
             </div>
 
-            <!-- İstatistikler -->
-            <div class="space-y-4 mb-6">
-                <div class="bg-slate-900/60 p-4 rounded-xl border border-purple-900/50 flex justify-between items-center">
-                    <div class="text-xs text-purple-300 font-bold uppercase tracking-wider">Tıklama Gücü</div>
-                    <div id="stat-click-power" class="text-xl font-black text-fuchsia-400">1</div>
+            <!-- OmniLight & Tema Kontrolü -->
+            <div class="bg-purple-950/40 p-3 rounded-lg border border-purple-800/60 flex justify-between items-center">
+                <span class="text-xs font-bold text-purple-300">OmniLight Sistemi</span>
+                <button id="omnilight-toggle" class="bg-purple-700 hover:bg-purple-600 text-[10px] px-3 py-1.5 rounded font-black tracking-wide transition">AÇIK</button>
+            </div>
+
+            <!-- Purple Hearts (Sağlık / Hız Barı) -->
+            <div class="bg-black/40 p-4 rounded-lg border border-purple-900/40">
+                <div class="flex justify-between text-xs font-bold text-purple-400 mb-2">
+                    <span>💜 Purple Hearts Enerjisi</span>
+                    <span id="heart-count">0%</span>
                 </div>
-                <div class="bg-slate-900/60 p-4 rounded-xl border border-purple-900/50 flex justify-between items-center">
-                    <div class="text-xs text-purple-300 font-bold uppercase tracking-wider">Oto Üretim / Sn</div>
-                    <div id="stat-auto-power" class="text-xl font-black text-indigo-400">0</div>
-                </div>
-                <div class="bg-slate-900/60 p-4 rounded-xl border border-purple-900/50 flex justify-between items-center">
-                    <div class="text-xs text-purple-300 font-bold uppercase tracking-wider">Sunucu Durumu</div>
-                    <div id="sync-status" class="text-xs font-bold text-green-400 flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div> Çevrimiçi
-                    </div>
+                <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-purple-900">
+                    <div id="heart-bar" class="heart-bar-fill bg-purple-500 h-full w-0 rounded-full shadow-[0_0_10px_#9333ea]"></div>
                 </div>
             </div>
 
-            <!-- Liderlik Tablosu -->
-            <div class="flex-grow flex flex-col border-t border-purple-800/50 pt-6 min-h-0">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-black text-purple-300 tracking-widest uppercase">GLOBAL SIRALAMA</h3>
-                    <button id="refresh-lb" class="text-xs bg-purple-900/50 border border-purple-500/50 px-2 py-1 rounded hover:bg-purple-700 transition">Yenile</button>
-                </div>
-                <div id="leaderboard-container" class="overflow-y-auto pr-2 space-y-2 flex-grow text-sm font-mono custom-scrollbar">
-                    <div class="text-center text-purple-500/50 text-xs mt-10">Veritabanına bağlanılıyor...</div>
-                </div>
+            <div class="space-y-2 text-sm font-mono bg-black/20 p-3 rounded-lg">
+                <div class="flex justify-between"><span>Tık Gücü:</span> <span id="stat-click-power" class="text-purple-400">1</span></div>
+                <div class="flex justify-between"><span>Oto / Sn:</span> <span id="stat-auto-power" class="text-indigo-400">0</span></div>
+                <div class="flex justify-between"><span>Ağ:</span> <span id="sync-status" class="text-green-400">Çevrimiçi</span></div>
+            </div>
+
+            <div class="flex-grow overflow-y-auto" id="leaderboard-container"></div>
+        </div>
+
+        <!-- ORTA PANEL -->
+        <div class="glass-panel w-full md:w-5/12 p-6 flex flex-col items-center justify-center relative">
+            <div id="main-score" class="text-6xl font-black font-mono mb-8 text-center tracking-tighter">0</div>
+            
+            <div id="click-area">
+                <button id="main-click-btn" class="clicker-btn font-black text-2xl text-white">TIKLA!</button>
+            </div>
+
+            <div id="cooldown-screen" class="absolute inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center hidden-el p-6 text-center z-30 rounded-xl">
+                <h2 class="text-red-500 font-black text-3xl mb-2 tracking-widest">🛑 SGM-AC KİLİTLENMESİ</h2>
+                <p class="text-gray-400 text-sm max-w-sm mb-6 font-mono">Güvenlik Protokolü Devreye Girdi. Aşırı tıklama hızı algılandı.</p>
+                <div id="cooldown-timer" class="text-5xl font-mono font-black text-red-400 bg-red-950/50 px-6 py-3 rounded-lg border border-red-500/50">05:00</div>
             </div>
         </div>
 
-        <!-- ORTA PANEL: Tıklama Alanı -->
-        <div class="glass-panel w-full md:w-5/12 p-8 flex flex-col items-center justify-center relative overflow-hidden h-full">
-            <!-- Arkaplan Kafes Deseni -->
-            <div class="absolute inset-0 bg-[linear-gradient(rgba(147,51,234,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(147,51,234,0.05)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
-            
-            <div class="absolute top-8 text-center z-10 w-full">
-                <h2 class="text-4xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-500 mb-1 drop-shadow-lg">SGM CORE</h2>
-                <div class="text-purple-400 text-xs font-mono tracking-[0.3em] uppercase opacity-80">Anti-Cheat Aktif</div>
-            </div>
-
-            <div class="text-center mb-16 z-10 w-full mt-20">
-                <div id="main-score" class="score-text text-[5rem] md:text-[6rem] leading-none font-black text-white tracking-tighter">0</div>
-                <div class="text-sm text-purple-400 uppercase tracking-[0.2em] mt-4 font-bold">Toplam Puan</div>
-            </div>
-
-            <!-- TIKLAMA BUTONU -->
-            <div id="click-area" class="relative z-10">
-                <button id="main-click-btn" class="clicker-btn">
-                    TIKLA!
-                </button>
-            </div>
-            
-            <!-- Hile Uyarı Göstergesi (Gizli) -->
-            <div id="cheat-warning" class="absolute bottom-10 text-red-500 font-bold text-sm tracking-widest hidden-el bg-red-950/80 px-4 py-2 rounded border border-red-500 animate-pulse">
-                SİSTEM ANOMALİSİ TESPİT EDİLDİ
-            </div>
-        </div>
-
-        <!-- SAĞ PANEL: Kara Borsa (Mağaza) -->
-        <div class="glass-panel w-full md:w-4/12 flex flex-col overflow-hidden h-full">
-            <div class="p-6 border-b border-purple-800/50 bg-slate-900/40 relative">
-                <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-400 tracking-widest uppercase">KARA BORSA</h3>
-                <p class="text-xs text-purple-400 font-mono mt-1">Sistem Yükseltmeleri</p>
-                <div class="absolute right-6 top-6 w-3 h-3 bg-fuchsia-500 rounded-full animate-ping"></div>
-            </div>
-            
-            <div id="shop-container" class="overflow-y-auto p-4 space-y-3 flex-grow custom-scrollbar">
-                <!-- JS tarafından doldurulacak -->
-            </div>
+        <!-- SAĞ PANEL -->
+        <div class="glass-panel w-full md:w-4/12 flex flex-col overflow-hidden">
+            <div class="p-4 bg-black/20 font-black border-b border-purple-900/50 text-purple-300">KARA BORSA v3</div>
+            <div id="shop-container" class="overflow-y-auto p-4 space-y-2 flex-grow"></div>
         </div>
     </div>
 
-    <!-- ==========================================
-         JAVASCRIPT MOTORU VE ANTI-CHEAT SİSTEMİ
-         ========================================== -->
+    <!-- JAVASCRIPT MOTORU -->
     <script type="module">
-        // 1. FIREBASE İTHALATLARI
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { 
-            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-            signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        import { 
-            getFirestore, doc, setDoc, getDoc, collection, query, 
-            orderBy, limit, getDocs 
-        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // 2. FIREBASE YAPILANDIRMASI
         const firebaseConfig = {
             apiKey: "AIzaSyDXyswOl4HWAUKfgyBk2jjNWMvaTLbou34",
             authDomain: "purple-clicker.firebaseapp.com",
@@ -357,431 +184,269 @@
             appId: "1:964233637279:web:9e3adc46496f2a483b61aa"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
+        let app, auth, db;
+        let isOnlineMode = true;
 
-        // 3. OYUN VERİ YAPISI
-        let gameState = {
-            score: 0,
-            totalClicks: 0,
-            clickPower: 1,
-            autoPower: 0,
-            inventory: {},
-            achievementsUnlocked: []
-        };
+        try {
+            app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+        } catch(e) {
+            isOnlineMode = false;
+            console.log("Çevrimdışı mod aktif edildi.");
+        }
+
+        let gameState = { score: 0, clickPower: 1, autoPower: 0, inventory: {} };
         let currentUser = null;
-        let autoClickerInterval = null;
-        let saveTimeout = null;
-
-        // ==========================================
-        // 4. SGM ANTI-CHEAT (HİLE KORUMASI) DEĞİŞKENLERİ
-        // ==========================================
+        let autoInterval = null, saveTimeout = null;
+        
+        // --- SGM-AC & MEKANİK DEĞİŞKENLERİ ---
         let cheatStrikes = 0;
         let isCheckingCheat = false;
         let cheatClickCount = 0;
-        const MAX_CPS = 15; // Saniyede 15 tıklama üzeri hile sayılır
-        let isBanned = false; // Oyuncu banlandı mı?
+        let isOmniLightOpen = true;
+        let heartEnergy = 0;
+        let cooldownActive = false;
 
-        // 5. GENİŞLETİLMİŞ YÜKSELTME LİSTESİ (20 Adet)
         const UPGRADES = [
-            { id: "u1", name: "Kırık Fare", desc: "Tıklama gücünü +1 artırır.", baseCost: 15, power: 1, type: "click", icon: "🖱️" },
-            { id: "u2", name: "Basit Script", desc: "Saniyede +1 oto puan.", baseCost: 50, power: 1, type: "auto", icon: "📝" },
-            { id: "u3", name: "Termux Terminali", desc: "Tıklama gücü +5.", baseCost: 250, power: 5, type: "click", icon: "📟" },
-            { id: "u4", name: "MT Manager Lisansı", desc: "Saniyede +10 oto puan.", baseCost: 1000, power: 10, type: "auto", icon: "📁" },
-            { id: "u5", name: "AndroidIDE Derleyici", desc: "Tıklama gücü +20.", baseCost: 4000, power: 20, type: "click", icon: "📱" },
-            { id: "u6", name: "Vercel Hosting", desc: "Saniyede +50 oto puan.", baseCost: 15000, power: 50, type: "auto", icon: "☁️" },
-            { id: "u7", name: "React Bileşeni", desc: "Tıklama gücü +100.", baseCost: 50000, power: 100, type: "click", icon: "⚛️" },
-            { id: "u8", name: "Purple Hearts Mod", desc: "Saniyede +200 oto puan.", baseCost: 150000, power: 200, type: "auto", icon: "💜" },
-            { id: "u9", name: "Mithril Kılıcı", desc: "Tıklama gücü +500.", baseCost: 400000, power: 500, type: "click", icon: "⚔️" },
-            { id: "u10", name: "SGM Veri Merkezi", desc: "Saniyede +1K oto puan.", baseCost: 1000000, power: 1000, type: "auto", icon: "🏢" },
-            { id: "u11", name: "CurseForge Hesabı", desc: "Tıklama gücü +2K.", baseCost: 2500000, power: 2000, type: "click", icon: "🔥" },
-            { id: "u12", name: "Yapay Zeka Asistanı", desc: "Saniyede +5K oto puan.", baseCost: 7500000, power: 5000, type: "auto", icon: "🤖" },
-            { id: "u13", name: "Bedrock Sunucusu", desc: "Tıklama gücü +10K.", baseCost: 15000000, power: 10000, type: "click", icon: "🌍" },
-            { id: "u14", name: "Kuantum Çipi", desc: "Saniyede +25K oto puan.", baseCost: 50000000, power: 25000, type: "auto", icon: "🔬" },
-            { id: "u15", name: "Purpleguy Klonu", desc: "Tıklama gücü +50K.", baseCost: 150000000, power: 50000, type: "click", icon: "👤" },
-            { id: "u16", name: "Siber Matrix", desc: "Saniyede +100K oto puan.", baseCost: 500000000, power: 100000, type: "auto", icon: "🕸️" },
-            { id: "u17", name: "Zaman Makinesi", desc: "Tıklama gücü +250K.", baseCost: 1500000000, power: 250000, type: "click", icon: "⏳" },
-            { id: "u18", name: "Galaktik Ağ", desc: "Saniyede +500K oto puan.", baseCost: 5000000000, power: 500000, type: "auto", icon: "🌌" },
-            { id: "u19", name: "Evrensel Kaynak", desc: "Tıklama gücü +1M.", baseCost: 15000000000, power: 1000000, type: "click", icon: "🔮" },
-            { id: "u20", name: "SGM Tanrısı", desc: "Saniyede +5M oto puan.", baseCost: 50000000000, power: 5000000, type: "auto", icon: "👑" }
+            { id: "u1", name: "Kırık Fare", baseCost: 15, power: 1, type: "click" },
+            { id: "u2", name: "Basit Script", baseCost: 50, power: 1, type: "auto" },
+            { id: "u3", name: "MT Manager Modu", baseCost: 500, power: 10, type: "auto" }
         ];
 
-        // 6. DOM ELEMANLARI
         const UI = {
             screens: { auth: document.getElementById('auth-screen'), app: document.getElementById('game-app') },
-            auth: {
-                email: document.getElementById('email'), pass: document.getElementById('password'),
-                loginBtn: document.getElementById('login-btn'), signupBtn: document.getElementById('signup-btn'),
-                googleBtn: document.getElementById('google-login-btn'), error: document.getElementById('auth-error')
-            },
-            game: {
-                score: document.getElementById('main-score'), clickBtn: document.getElementById('main-click-btn'),
-                clickArea: document.getElementById('click-area'), shop: document.getElementById('shop-container'),
-                leaderboard: document.getElementById('leaderboard-container'), refreshLb: document.getElementById('refresh-lb'),
-                logoutBtn: document.getElementById('logout-btn'), cheatWarning: document.getElementById('cheat-warning')
-            },
-            stats: {
-                email: document.getElementById('player-email'), initial: document.getElementById('player-initial'),
-                clickPower: document.getElementById('stat-click-power'), autoPower: document.getElementById('stat-auto-power'),
-                sync: document.getElementById('sync-status')
-            }
+            auth: { email: document.getElementById('email'), pass: document.getElementById('password'), loginBtn: document.getElementById('login-btn'), signupBtn: document.getElementById('signup-btn'), offlineBtn: document.getElementById('offline-btn'), error: document.getElementById('auth-error') },
+            game: { score: document.getElementById('main-score'), clickBtn: document.getElementById('main-click-btn'), clickArea: document.getElementById('click-area'), shop: document.getElementById('shop-container'), cooldownScreen: document.getElementById('cooldown-screen'), cooldownTimer: document.getElementById('cooldown-timer'), omniToggle: document.getElementById('omnilight-toggle'), heartBar: document.getElementById('heart-bar'), heartCount: document.getElementById('heart-count') }
         };
 
-        // 7. YARDIMCI FONKSİYONLAR
-        function formatNumber(num) {
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-            return Math.floor(num).toString();
-        }
-
-        function showToast(title, message, type = 'info') {
+        function showToast(title, msg, type='info') {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            let borderCol = type === 'success' ? 'border-green-500' : (type === 'error' ? 'border-red-500' : 'border-purple-500');
-            let textCol = type === 'success' ? 'text-green-400' : (type === 'error' ? 'text-red-400' : 'text-purple-400');
-            
-            toast.className = `toast-enter glass-panel p-4 flex flex-col border-l-4 min-w-[280px] ${borderCol} bg-slate-900/90`;
-            toast.innerHTML = `<span class="font-black text-sm tracking-wide ${textCol} uppercase">${title}</span>
-                               <span class="text-gray-300 text-xs mt-1 font-mono">${message}</span>`;
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                toast.style.transition = 'all 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+            const t = document.createElement('div');
+            t.className = `glass-panel p-3 border-l-4 ${type==='error'?'border-red-500':'border-purple-500'} bg-slate-900/95 text-xs`;
+            t.innerHTML = `<b class="block uppercase">${title}</b><span class="font-mono text-gray-400">${msg}</span>`;
+            container.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3500);
         }
 
-        function calculateCost(baseCost, count) { return Math.floor(baseCost * Math.pow(1.15, count)); }
-        function showError(msg) {
-            UI.auth.error.textContent = msg; UI.auth.error.classList.remove('hidden-el');
-            setTimeout(() => UI.auth.error.classList.add('hidden-el'), 5000);
-        }
+        function calculateCost(base, count) { return Math.floor(base * Math.pow(1.15, count)); }
 
-        // 8. ARAYÜZ GÜNCELLEME (RENDER)
         function updateUI() {
-            UI.game.score.innerText = formatNumber(gameState.score);
-            UI.stats.clickPower.innerText = formatNumber(gameState.clickPower);
-            UI.stats.autoPower.innerText = formatNumber(gameState.autoPower);
+            UI.game.score.innerText = Math.floor(gameState.score).toLocaleString();
+            document.getElementById('stat-click-power').innerText = gameState.clickPower;
+            document.getElementById('stat-auto-power').innerText = gameState.autoPower;
             
-            document.querySelectorAll('.upgrade-btn').forEach(btn => {
-                const cost = parseInt(btn.dataset.currentCost);
-                btn.disabled = gameState.score < cost;
-            });
-        }
-
-        function renderShop() {
-            UI.game.shop.innerHTML = '';
-            UPGRADES.forEach(upg => {
-                const count = gameState.inventory[upg.id] || 0;
-                const cost = calculateCost(upg.baseCost, count);
-                
-                const btn = document.createElement('button');
-                btn.className = 'upgrade-btn w-full';
-                btn.dataset.id = upg.id; btn.dataset.currentCost = cost;
-                if (gameState.score < cost) btn.disabled = true;
-                
-                btn.innerHTML = `
-                    <div class="text-4xl bg-black/40 p-3 rounded-lg border border-purple-900/50 shadow-inner">${upg.icon}</div>
-                    <div class="flex-grow text-left">
-                        <div class="font-bold text-gray-100 text-sm tracking-wide">${upg.name} <span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded ml-2 border border-purple-700/50">Lvl ${count}</span></div>
-                        <div class="text-[11px] text-gray-400 mt-1">${upg.desc}</div>
-                        <div class="text-xs font-mono font-bold text-fuchsia-400 mt-2">💎 ${formatNumber(cost)} Puan</div>
-                    </div>
-                `;
-                btn.addEventListener('click', () => buyUpgrade(upg.id));
-                UI.game.shop.appendChild(btn);
-            });
-        }
-
-        async function renderLeaderboard() {
-            UI.game.leaderboard.innerHTML = '<div class="text-center text-purple-500 mt-4 spinner mx-auto"></div>';
-            try {
-                const q = query(collection(db, "skorlar"), orderBy("puan", "desc"), limit(25));
-                const snap = await getDocs(q);
-                UI.game.leaderboard.innerHTML = '';
-                
-                let rank = 1;
-                snap.forEach((doc) => {
-                    const data = doc.data();
-                    const emailPre = data.email.split('@')[0];
-                    const isMe = currentUser && currentUser.email === data.email;
-                    
-                    const item = document.createElement('div');
-                    item.className = `flex justify-between items-center p-3 rounded-lg mb-2 transition-all ${isMe ? 'bg-gradient-to-r from-purple-900/80 to-indigo-900/80 border border-purple-400 shadow-[0_0_15px_rgba(147,51,234,0.3)]' : 'bg-black/40 border border-gray-800'}`;
-                    item.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <span class="${rank <= 3 ? 'text-yellow-400 font-black' : 'text-gray-500 font-bold'} w-5 text-right">${rank}.</span>
-                            <span class="${isMe ? 'text-white font-bold' : 'text-gray-300'} text-xs truncate max-w-[100px]">${emailPre}</span>
-                        </div>
-                        <span class="text-fuchsia-400 font-black text-xs bg-black/50 px-2 py-1 rounded">${formatNumber(data.puan)}</span>
-                    `;
-                    UI.game.leaderboard.appendChild(item);
-                    rank++;
-                });
-            } catch (err) {
-                console.error("Tablo hatası:", err);
-                UI.game.leaderboard.innerHTML = '<div class="text-red-400 text-xs text-center">Bağlantı koptu.</div>';
+            // OmniLight Parlama Şiddetini Ayarla
+            if(isOmniLightOpen) {
+                let intensity = Math.min(gameState.clickPower * 2, 60);
+                document.documentElement.style.setProperty('--light-intensity', intensity + 'px');
+            } else {
+                document.documentElement.style.setProperty('--light-intensity', '0px');
             }
+
+            document.querySelectorAll('.up-btn').forEach(btn => {
+                btn.disabled = gameState.score < parseInt(btn.dataset.cost);
+            });
         }
 
-        // ==========================================
-        // 9. ANTI-CHEAT (HİLE KORUMASI) MOTORU
-        // ==========================================
-        
-        // Her 10 saniyede bir, 3 saniyelik test başlat
+        // --- AKILLI CPS HESAPLAMA MOTORU (SGM-AC) ---
         setInterval(() => {
-            if (!currentUser || isBanned) return; 
-            
+            if (cooldownActive) return;
             isCheckingCheat = true;
             cheatClickCount = 0;
 
-            // 3 saniye sonra kontrolü bitir ve hızı hesapla
             setTimeout(() => {
                 isCheckingCheat = false;
-                let cps = cheatClickCount / 3; // Clicks Per Second
+                let cps = cheatClickCount / 3;
+                
+                // Akıllı Limit: Temel limit 15 CPS + (Oto üretimin %10'u kadar tolerans marjı)
+                let dynamicMaxCps = 15 + (gameState.autoPower * 0.1);
 
-                if (cps > MAX_CPS) {
-                    hileyiYakala(cps);
+                if (cps > dynamicMaxCps) {
+                    triggerCheatProtocol(cps);
                 }
             }, 3000);
         }, 10000);
 
-        function hileyiYakala(cps) {
+        function triggerCheatProtocol(cps) {
             cheatStrikes++;
-            UI.game.cheatWarning.classList.remove('hidden-el');
-            setTimeout(() => UI.game.cheatWarning.classList.add('hidden-el'), 2000);
+            
+            // Enerji barını tehlike rengine çek ve patlat
+            heartEnergy = 0;
+            UI.game.heartBar.style.width = '0%';
+            UI.game.heartBar.style.backgroundColor = '#ef4444';
 
             if (cheatStrikes === 1) {
-                showToast("⚠️ SGM ANTI-CHEAT", `Bizim olmayan bir clicker kullanıyorsun! Hızın: ${cps.toFixed(1)} CPS. Lütfen kapat.`, "error");
-            } 
-            else if (cheatStrikes === 2) {
-                showToast("⚠️ SGM ANTI-CHEAT (UYARI 2)", "Bir daha yaparsan admine bildiririm! Oto-clicker'ı hemen kapat.", "error");
-            } 
-            else if (cheatStrikes >= 3) {
-                isBanned = true;
-                showToast("🛑 HESAP KİLİTLENDİ", "Bu kadar yeter posta gönderiliyor...", "error");
-                
-                // Oyuncunun daha fazla tıklamasını kalıcı olarak engelle
-                UI.game.clickBtn.classList.add('banned-btn');
-                UI.game.clickBtn.innerHTML = '<span class="text-4xl text-red-500">BANLANDIN</span>';
-                
-                // Admin'e mail gönderme simülasyonu
-                adminMailGonder(cps);
+                showToast("⚠️ SGM-AC UYARI 1", "Bizim olmayan bir clicker algılandı! Lütfen kapat.", "error");
+            } else if (cheatStrikes === 2) {
+                showToast("⚠️ SGM-AC UYARI 2", "Bir daha yaparsan admine bildiririm!", "error");
+            } else if (cheatStrikes >= 3) {
+                startCooldownTimeout(cps);
             }
         }
 
-        function adminMailGonder(cps) {
-            const hileciEmail = currentUser ? currentUser.email : "Bilinmeyen";
+        // --- 5 DAKİKALIK GEÇİCİ BAN (COOLDOWN) PROTOKOLÜ ---
+        function startCooldownTimeout(cps) {
+            cooldownActive = true;
+            UI.game.cooldownScreen.classList.remove('hidden-el');
+            showToast("🛑 PROTOKOL 560", "Bu kadar yeter posta gönderiliyor...", "error");
             
-            // Gerçek projede buraya EmailJS (emailjs.send) kodları gelir.
-            // SGM Adminine (aftonpurpleguy560@gmail.com) bildirim gönderilir.
-            console.log("%c 🔴 SGM GÜVENLİK PROTOKOLÜ DEVREDE ", "background: red; color: white; font-size: 16px; font-weight: bold;");
-            console.log(`Hedef Email: aftonpurpleguy560@gmail.com`);
-            console.log(`Konu: Hile Tespit Edildi (SGM Anti-Cheat)`);
-            console.log(`Mesaj: Sistemde 3. kez oto-clicker kullanan bir oyuncu tespit edildi.`);
-            console.log(`Oyuncu: ${hileciEmail}`);
-            console.log(`Son Tespit Edilen Hız: ${cps.toFixed(1)} CPS`);
-            console.log("------------------------------------------");
+            // Admine Mail Bildirimi Simülasyonu
+            console.error(`🔴 ADMİN BİLDİRİMİ SENT TO: aftonpurpleguy560@gmail.com | Sebep: Hile tespit edildi. Hız: ${cps} CPS`);
+
+            let timeLeft = 300; // 5 dakika = 300 saniye
+            const timer = setInterval(() => {
+                timeLeft--;
+                let min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                let sec = (timeLeft % 60).toString().padStart(2, '0');
+                UI.game.cooldownTimer.innerText = `${min}:${sec}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    cooldownActive = false;
+                    cheatStrikes = 0;
+                    UI.game.cooldownScreen.classList.add('hidden-el');
+                    showToast("SİSTEM AKTİF", "Güvenlik kilidi kaldırıldı.", "success");
+                }
+            }, 1000);
         }
 
-        // ==========================================
-        // 10. OYUN MEKANİKLERİ VE TIKLAMA
-        // ==========================================
-
+        // --- PURPLE HEARTS ENERJİ BAR MEKANİĞİ ---
         UI.game.clickBtn.addEventListener('click', (e) => {
-            // ANTI-CHEAT: Eğer oyuncu banlandıysa hiçbir işlem yapma
-            if (isBanned) return;
-
-            // ANTI-CHEAT: Eğer sistem test modundaysa tıklamayı say
-            if (isCheckingCheat) {
-                cheatClickCount++;
-            }
+            if (cooldownActive) return;
+            if (isCheckingCheat) cheatClickCount++;
 
             gameState.score += gameState.clickPower;
-            gameState.totalClicks += 1;
             
-            createFloatingText(e, `+${formatNumber(gameState.clickPower)}`);
+            // Enerji barını doldur (Tıklama hızı dinamizmi)
+            if(heartEnergy < 100) {
+                heartEnergy = Math.min(heartEnergy + 2, 100);
+                UI.game.heartBar.style.width = heartEnergy + '%';
+                UI.game.heartCount.innerText = heartEnergy + '%';
+                UI.game.heartBar.style.backgroundColor = '#a855f7';
+            }
+
+            // Tıklama Parçacık Yazısı
+            const txt = document.createElement('div');
+            txt.className = 'floating-text font-black text-2xl';
+            txt.style.left = e.clientX + 'px'; txt.style.top = e.clientY + 'px';
+            txt.innerText = `+${gameState.clickPower} 💜`;
+            document.body.appendChild(txt);
+            setTimeout(() => txt.remove(), 1000);
+
             updateUI();
             scheduleSave();
         });
 
-        function buyUpgrade(upgradeId) {
-            if (isBanned) return; // Banlıysa alışveriş de yapamaz
-            
-            const upgrade = UPGRADES.find(u => u.id === upgradeId);
-            const count = gameState.inventory[upgradeId] || 0;
-            const cost = calculateCost(upgrade.baseCost, count);
+        // Enerji Zamanla Azalır
+        setInterval(() => {
+            if(heartEnergy > 0 && !cooldownActive) {
+                heartEnergy = Math.max(heartEnergy - 5, 0);
+                UI.game.heartBar.style.width = heartEnergy + '%';
+                UI.game.heartCount.innerText = heartEnergy + '%';
+            }
+        }, 1000);
 
-            if (gameState.score >= cost) {
-                gameState.score -= cost;
-                gameState.inventory[upgradeId] = count + 1;
-                
-                if (upgrade.type === 'click') gameState.clickPower += upgrade.power;
-                if (upgrade.type === 'auto') gameState.autoPower += upgrade.power;
-                
-                showToast("Yükseltme Başarılı", `${upgrade.name} seviye atladı!`, 'success');
-                renderShop(); 
-                updateUI();
-                scheduleSave();
+        // OmniLight Aç/Kapa Anahtarı
+        UI.game.omniToggle.addEventListener('click', () => {
+            isOmniLightOpen = !isOmniLightOpen;
+            UI.game.omniToggle.innerText = isOmniLightOpen ? "AÇIK" : "KAPALI";
+            UI.game.omniToggle.className = isOmniLightOpen ? "bg-purple-700 text-[10px] px-3 py-1.5 rounded font-black" : "bg-gray-700 text-[10px] px-3 py-1.5 rounded font-black";
+            if(isOmniLightOpen) document.getElementById('main-body').classList.add('omnilight-active');
+            else document.getElementById('main-body').classList.remove('omnilight-active');
+            updateUI();
+        });
+
+        // --- MAĞAZA MOTORU ---
+        function renderShop() {
+            UI.game.shop.innerHTML = '';
+            UPGRADES.forEach(u => {
+                let count = gameState.inventory[u.id] || 0;
+                let cost = calculateCost(u.baseCost, count);
+                let btn = document.createElement('button');
+                btn.className = 'up-btn w-full bg-black/40 border border-purple-900/60 p-3 rounded-xl flex justify-between items-center text-xs font-mono disabled:opacity-40';
+                btn.dataset.cost = cost;
+                btn.innerHTML = `<div><b>${u.name}</b> (Lvl ${count})</div><div class="text-fuchsia-400 font-bold">${cost} Puan</div>`;
+                btn.addEventListener('click', () => {
+                    if(gameState.score >= cost) {
+                        gameState.score -= cost;
+                        gameState.inventory[u.id] = count + 1;
+                        if(u.type === 'click') gameState.clickPower += u.power;
+                        if(u.type === 'auto') gameState.autoPower += u.power;
+                        renderShop(); updateUI(); scheduleSave();
+                    }
+                });
+                UI.game.shop.appendChild(btn);
+            });
+        }
+
+        // --- KAYIT & OFFLINE MOTORU ---
+        function scheduleSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem('sgm_local_save', JSON.stringify(gameState));
+                if(isOnlineMode && currentUser) {
+                    setDoc(doc(db, "skorlar", currentUser.uid), { puan: gameState.score, clickPower: gameState.clickPower, autoPower: gameState.autoPower, inventory: gameState.inventory, email: currentUser.email }, { merge: true });
+                }
+            }, 2000);
+        }
+
+        function loadLocalData() {
+            let local = localStorage.getItem('sgm_local_save');
+            if(local) {
+                gameState = JSON.parse(local);
+                updateUI(); renderShop();
             }
         }
 
-        function startAutoClicker() {
-            if (autoClickerInterval) clearInterval(autoClickerInterval);
-            autoClickerInterval = setInterval(() => {
-                if (gameState.autoPower > 0 && !isBanned) {
-                    gameState.score += (gameState.autoPower / 10); // Saniyede 10 kere tetiklenir, smooth artış sağlar
+        // Çevrimdışı Mod Butonu Tetikleyicisi
+        UI.auth.offlineBtn.addEventListener('click', () => {
+            isOnlineMode = false;
+            document.getElementById('sync-status').innerText = "Çevrimdışı Mod";
+            document.getElementById('sync-status').className = "text-yellow-500";
+            UI.screens.auth.classList.add('hidden-el');
+            UI.screens.app.classList.remove('hidden-el');
+            loadLocalData();
+            renderShop();
+            startAutoLoop();
+        });
+
+        function startAutoLoop() {
+            if(autoInterval) clearInterval(autoInterval);
+            autoInterval = setInterval(() => {
+                if(gameState.autoPower > 0 && !cooldownActive) {
+                    gameState.score += (gameState.autoPower / 10);
                     updateUI();
-                    if (Math.random() < 0.05) scheduleSave(); // Rastgele aralıklarla otomatik kayıt
                 }
             }, 100);
         }
 
-        function createFloatingText(e, text) {
-            const el = document.createElement('div');
-            el.className = 'floating-text';
-            el.innerText = text;
-            const rect = UI.game.clickArea.getBoundingClientRect();
-            // Tıklanan yere göre rastgelelik kat
-            const x = e.clientX - rect.left + (Math.random() * 60 - 30);
-            const y = e.clientY - rect.top + (Math.random() * 40 - 20);
-            
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
-            UI.game.clickArea.appendChild(el);
-            setTimeout(() => el.remove(), 1200);
-        }
-
-        // ==========================================
-        // 11. VERİTABANI (FIRESTORE) İŞLEMLERİ
-        // ==========================================
-        
-        function scheduleSave() {
-            if (isBanned) return; // Banlıysa kaydetme
-            
-            UI.stats.sync.innerHTML = '<div class="w-2 h-2 bg-yellow-500 rounded-full"></div> Kaydediliyor...';
-            UI.stats.sync.classList.replace('text-green-400', 'text-yellow-400');
-            
-            if (saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => saveGameData(), 2500); // 2.5 sn bekleyip kaydeder
-        }
-
-        async function saveGameData() {
-            if (!currentUser) return;
-            try {
-                const userRef = doc(db, "skorlar", currentUser.uid);
-                await setDoc(userRef, {
-                    puan: Math.floor(gameState.score),
-                    email: currentUser.email,
-                    clickPower: gameState.clickPower,
-                    autoPower: gameState.autoPower,
-                    inventory: gameState.inventory,
-                    sonGuncelleme: new Date(),
-                    banDurumu: isBanned // Ban durumunu da sunucuya yazıyoruz
-                }, { merge: true });
-                
-                UI.stats.sync.innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div> Çevrimiçi';
-                UI.stats.sync.classList.replace('text-yellow-400', 'text-green-400');
-            } catch (err) {
-                console.error("Kayıt hatası:", err);
-                UI.stats.sync.innerHTML = '<div class="w-2 h-2 bg-red-500 rounded-full"></div> Hata!';
-                UI.stats.sync.classList.replace('text-yellow-400', 'text-red-400');
-            }
-        }
-
-        async function loadGameData(user) {
-            try {
-                const userRef = doc(db, "skorlar", user.uid);
-                const docSnap = await getDoc(userRef);
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Sunucudan banlı geldiyse hemen kitle
-                    if (data.banDurumu) {
-                        isBanned = true;
-                        UI.game.clickBtn.classList.add('banned-btn');
-                        UI.game.clickBtn.innerHTML = '<span class="text-4xl text-red-500">BANLANDIN</span>';
-                        showToast("HESAP YASAKLI", "Bu hesap hile sebebiyle sunucudan kilitlenmiştir.", "error");
-                    }
-                    
-                    gameState.score = data.puan || 0;
-                    gameState.clickPower = data.clickPower || 1;
-                    gameState.autoPower = data.autoPower || 0;
-                    gameState.inventory = data.inventory || {};
-                    showToast("SGM OS Başlatıldı", "Profil verileri başarıyla yüklendi.", "success");
-                } else {
-                    showToast("SGM Ağına Hoş Geldin", "Yeni oyuncu profili oluşturuldu.", "success");
+        if(isOnlineMode) {
+            onAuthStateChanged(auth, (user) => {
+                if(user) {
+                    currentUser = user;
+                    UI.screens.auth.classList.add('hidden-el');
+                    UI.screens.app.classList.remove('hidden-el');
+                    document.getElementById('player-email').innerText = user.email;
+                    getDoc(doc(db, "skorlar", user.uid)).then(snap => {
+                        if(snap.exists()) gameState = snap.data();
+                        updateUI(); renderShop(); startAutoLoop();
+                    });
                 }
-                
-                updateUI();
-                renderShop();
-                startAutoClicker();
-                renderLeaderboard();
-                
-            } catch (err) {
-                showToast("Sistem Hatası", "Veritabanı bağlantısı kurulamadı.", "error");
-            }
+            });
+            UI.auth.loginBtn.addEventListener('click', () => {
+                signInWithEmailAndPassword(auth, UI.auth.email.value, UI.auth.pass.value).catch(e => { UI.auth.error.innerText = e.message; UI.auth.error.classList.remove('hidden-el'); });
+            });
+            UI.auth.signupBtn.addEventListener('click', () => {
+                createUserWithEmailAndPassword(auth, UI.auth.email.value, UI.auth.pass.value).catch(e => { UI.auth.error.innerText = e.message; UI.auth.error.classList.remove('hidden-el'); });
+            });
+            document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
         }
 
-        // ==========================================
-        // 12. AUTH (KİMLİK DOĞRULAMA) OLAYLARI
-        // ==========================================
-
-        UI.auth.signupBtn.addEventListener('click', () => {
-            const e = UI.auth.email.value; const p = UI.auth.pass.value;
-            if(!e || !p) return showError("Protokol hatası: Boş alan bırakılamaz.");
-            createUserWithEmailAndPassword(auth, e, p).catch(err => showError(err.message));
-        });
-
-        UI.auth.loginBtn.addEventListener('click', () => {
-            const e = UI.auth.email.value; const p = UI.auth.pass.value;
-            if(!e || !p) return showError("Protokol hatası: Boş alan bırakılamaz.");
-            signInWithEmailAndPassword(auth, e, p).catch(err => showError(err.message));
-        });
-
-        UI.auth.googleBtn.addEventListener('click', () => {
-            signInWithPopup(auth, googleProvider).catch(err => showError(err.message));
-        });
-
-        UI.game.logoutBtn.addEventListener('click', () => signOut(auth));
-        UI.game.refreshLb.addEventListener('click', () => {
-            UI.game.refreshLb.classList.add('animate-spin');
-            renderLeaderboard().then(() => UI.game.refreshLb.classList.remove('animate-spin'));
-        });
-
-        // Durum Dinleyicisi
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                UI.screens.auth.classList.add('hidden-el');
-                UI.screens.app.classList.remove('hidden-el');
-                
-                UI.stats.email.textContent = user.email;
-                UI.stats.initial.textContent = user.email.charAt(0).toUpperCase();
-                
-                loadGameData(user);
-            } else {
-                currentUser = null;
-                clearInterval(autoClickerInterval);
-                isBanned = false; // Çıkış yapınca ban durumunu resetle (görsel olarak)
-                UI.game.clickBtn.classList.remove('banned-btn');
-                UI.game.clickBtn.innerHTML = 'TIKLA!';
-                
-                gameState = { score: 0, totalClicks: 0, clickPower: 1, autoPower: 0, inventory: {}, achievementsUnlocked: [] };
-                
-                UI.screens.auth.classList.remove('hidden-el');
-                UI.screens.app.classList.add('hidden-el');
+        // PWA Kurulum Kontrolü
+        window.addEventListener('load', () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Aktif."));
             }
         });
-
-        console.log("%c SGM PURPLE CLICKER ULTIMATE V2 BAŞLATILDI ", "background: #9333ea; color: #fff; font-size: 18px; font-weight: bold; border-radius: 8px; padding: 4px;");
-        console.log("%c ANTI-CHEAT MODÜLÜ: AKTİF ", "color: #22c55e; font-weight: bold;");
     </script>
 </body>
 </html>
