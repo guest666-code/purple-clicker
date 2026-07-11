@@ -1,0 +1,16 @@
+{
+  "name": "Purple Clicker Ultimate",
+  "short_name": "PurpleClicker",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050510",
+  "theme_color": "#9333ea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3176/3176280.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
